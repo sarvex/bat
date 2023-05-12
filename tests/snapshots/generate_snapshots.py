@@ -19,16 +19,17 @@ def generate_snapshots():
 
 
 def generate_style_snapshot(style):
-    generate_snapshot(style.replace(",", "_"), "--style={}".format(style))
+    generate_snapshot(style.replace(",", "_"), f"--style={style}")
 
 
 def generate_snapshot(name, arguments):
-    command = "cargo run -- --paging=never --color=never --decorations=always "
-    command += "{args} sample.rs > output/{name}.snapshot.txt".format(
-        name=name,
-        args=arguments
+    command = (
+        "cargo run -- --paging=never --color=never --decorations=always "
+        + "{args} sample.rs > output/{name}.snapshot.txt".format(
+            name=name, args=arguments
+        )
     )
-    print("generating snapshot for {}".format(name))
+    print(f"generating snapshot for {name}")
     subprocess.call(command, shell=True)
 
 

@@ -73,19 +73,18 @@ def create_highlighted_version(args):
     with open(output_path, "wb") as output_file:
         output_file.write(bat_output)
 
-    print("Created '{}'".format(output_path))
+    print(f"Created '{output_path}'")
 
 
 def create_highlighted_versions(output_basepath):
     root = os.path.dirname(os.path.abspath(__file__))
     source_paths = path.join(root, "source", "*")
 
-    sources = []
-    for source in glob.glob(path.join(source_paths, "*")) + glob.glob(
-        path.join(source_paths, ".*")
-    ):
-        sources.append((output_basepath, source))
-
+    sources = [
+        (output_basepath, source)
+        for source in glob.glob(path.join(source_paths, "*"))
+        + glob.glob(path.join(source_paths, ".*"))
+    ]
     try:
         with Pool() as p:
             p.map(create_highlighted_version, sources)
@@ -94,14 +93,8 @@ def create_highlighted_versions(output_basepath):
             "=== Error: Could not highlight source file:\n" + " ".join(err.cmd),
             file=sys.stderr,
         )
-        print(
-            "=== bat stdout:\n{}".format(err.stdout.decode("utf-8")),
-            file=sys.stderr,
-        )
-        print(
-            "=== bat stderr:\n{}".format(err.stderr.decode("utf-8")),
-            file=sys.stderr,
-        )
+        print(f'=== bat stdout:\n{err.stdout.decode("utf-8")}', file=sys.stderr)
+        print(f'=== bat stderr:\n{err.stderr.decode("utf-8")}', file=sys.stderr)
         return False
     except FileNotFoundError:
         print(

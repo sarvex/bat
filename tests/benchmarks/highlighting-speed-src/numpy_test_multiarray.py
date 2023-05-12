@@ -823,7 +823,7 @@ class TestCreation:
         nstr = ['123', '123']
         result = np.array([123, 123], dtype=int)
         for type in types:
-            msg = 'String conversion for %s' % type
+            msg = f'String conversion for {type}'
             assert_equal(np.array(nstr, dtype=type), result, err_msg=msg)
 
     def test_void(self):
@@ -1128,12 +1128,11 @@ class TestStructured:
             b[0].a[i] = 5
             assert_equal(a == b, [False, False])
             assert_equal(a != b, [True, True])
-        for i in range(2):
-            for j in range(2):
-                b = a.copy()
-                b[0].c[i, j] = 10
-                assert_equal(a == b, [False, True])
-                assert_equal(a != b, [True, False])
+        for i, j in itertools.product(range(2), range(2)):
+            b = a.copy()
+            b[0].c[i, j] = 10
+            assert_equal(a == b, [False, True])
+            assert_equal(a != b, [True, False])
 
         # Check that broadcasting with a subarray works
         a = np.array([[(0,)], [(1,)]], dtype=[('a', 'f8')])
@@ -1741,7 +1740,7 @@ class TestMethods:
         a = np.arange(101, dtype=dtype)
         b = a[::-1].copy()
         for kind in self.sort_kinds:
-            msg = "scalar sort, kind=%s" % kind
+            msg = f"scalar sort, kind={kind}"
             c = a.copy()
             c.sort(kind=kind)
             assert_equal(c, a, msg)
@@ -1756,7 +1755,7 @@ class TestMethods:
         a = np.arange(-50, 51, dtype=dtype)
         b = a[::-1].copy()
         for kind in self.sort_kinds:
-            msg = "scalar sort, kind=%s" % (kind)
+            msg = f"scalar sort, kind={kind}"
             c = a.copy()
             c.sort(kind=kind)
             assert_equal(c, a, msg)
@@ -1781,7 +1780,7 @@ class TestMethods:
         setattr(ai, part, 1)
         setattr(bi, part, 1)
         for kind in self.sort_kinds:
-            msg = "complex sort, %s part == 1, kind=%s" % (part, kind)
+            msg = f"complex sort, {part} part == 1, kind={kind}"
             c = ai.copy()
             c.sort(kind=kind)
             assert_equal(c, ai, msg)
@@ -1802,10 +1801,10 @@ class TestMethods:
     @pytest.mark.parametrize('dtype', [np.bytes_, np.unicode_])
     def test_sort_string(self, dtype):
         # np.array will perform the encoding to bytes for us in the bytes test
-        a = np.array(['aaaaaaaa' + chr(i) for i in range(101)], dtype=dtype)
+        a = np.array([f'aaaaaaaa{chr(i)}' for i in range(101)], dtype=dtype)
         b = a[::-1].copy()
         for kind in self.sort_kinds:
-            msg = "kind=%s" % kind
+            msg = f"kind={kind}"
             c = a.copy()
             c.sort(kind=kind)
             assert_equal(c, a, msg)
@@ -1819,7 +1818,7 @@ class TestMethods:
         a[:] = list(range(101))
         b = a[::-1]
         for kind in ['q', 'h', 'm']:
-            msg = "kind=%s" % kind
+            msg = f"kind={kind}"
             c = a.copy()
             c.sort(kind=kind)
             assert_equal(c, a, msg)
@@ -1833,7 +1832,7 @@ class TestMethods:
         a = np.array([(i, i) for i in range(101)], dtype=dt)
         b = a[::-1]
         for kind in ['q', 'h', 'm']:
-            msg = "kind=%s" % kind
+            msg = f"kind={kind}"
             c = a.copy()
             c.sort(kind=kind)
             assert_equal(c, a, msg)
@@ -1847,7 +1846,7 @@ class TestMethods:
         a = np.arange(0, 101, dtype=dtype)
         b = a[::-1]
         for kind in ['q', 'h', 'm']:
-            msg = "kind=%s" % kind
+            msg = f"kind={kind}"
             c = a.copy()
             c.sort(kind=kind)
             assert_equal(c, a, msg)
@@ -1884,26 +1883,27 @@ class TestMethods:
     def test_sort_bad_ordering(self):
         # test generic class with bogus ordering,
         # should not segfault.
+
         class Boom:
             def __lt__(self, other):
                 return True
 
         a = np.array([Boom()] * 100, dtype=object)
         for kind in self.sort_kinds:
-            msg = "kind=%s" % kind
+            msg = f"kind={kind}"
             c = a.copy()
             c.sort(kind=kind)
             assert_equal(c, a, msg)
 
     def test_void_sort(self):
         # gh-8210 - previously segfaulted
-        for i in range(4):
+        for _ in range(4):
             rand = np.random.randint(256, size=4000, dtype=np.uint8)
             arr = rand.view('V4')
             arr[::-1].sort()
 
         dt = np.dtype([('val', 'i4', (1,))])
-        for i in range(4):
+        for _ in range(4):
             rand = np.random.randint(256, size=4000, dtype=np.uint8)
             arr = rand.view(dt)
             arr[::-1].sort()
@@ -1913,11 +1913,14 @@ class TestMethods:
         arr = np.array([0, datetime.now(), 1], dtype=object)
         for kind in self.sort_kinds:
             assert_raises(TypeError, arr.sort, kind=kind)
-        #gh-3879
+
+
         class Raiser:
-            def raises_anything(*args, **kwargs):
+            def raises_anything(self, **kwargs):
                 raise TypeError("SOMETHING ERRORED")
+
             __eq__ = __ne__ = __lt__ = __gt__ = __ge__ = __le__ = raises_anything
+
         arr = np.array([[Raiser(), n] for n in range(10)]).reshape(-1)
         np.random.shuffle(arr)
         for kind in self.sort_kinds:
@@ -1988,11 +1991,8 @@ class TestMethods:
         assert_raises_regex(ValueError, 'duplicate',
             lambda: r.sort(order=['id', 'id']))
 
-        if sys.byteorder == 'little':
-            strtype = '>i2'
-        else:
-            strtype = '<i2'
-        mydtype = [('name', strchar + '5'), ('col2', strtype)]
+        strtype = '>i2' if sys.byteorder == 'little' else '<i2'
+        mydtype = [('name', f'{strchar}5'), ('col2', strtype)]
         r = np.array([('a', 1), ('b', 255), ('c', 3), ('d', 258)],
                      dtype=mydtype)
         r.sort(order='col2')
@@ -2011,7 +2011,7 @@ class TestMethods:
             a = np.arange(101, dtype=dtype)
             b = a[::-1].copy()
             for kind in self.sort_kinds:
-                msg = "scalar argsort, kind=%s, dtype=%s" % (kind, dtype)
+                msg = f"scalar argsort, kind={kind}, dtype={dtype}"
                 assert_equal(a.copy().argsort(kind=kind), a, msg)
                 assert_equal(b.copy().argsort(kind=kind), b, msg)
 
@@ -2020,13 +2020,13 @@ class TestMethods:
         ai = a*1j + 1
         bi = b*1j + 1
         for kind in self.sort_kinds:
-            msg = "complex argsort, kind=%s" % kind
+            msg = f"complex argsort, kind={kind}"
             assert_equal(ai.copy().argsort(kind=kind), a, msg)
             assert_equal(bi.copy().argsort(kind=kind), b, msg)
         ai = a + 1j
         bi = b + 1j
         for kind in self.sort_kinds:
-            msg = "complex argsort, kind=%s" % kind
+            msg = f"complex argsort, kind={kind}"
             assert_equal(ai.copy().argsort(kind=kind), a, msg)
             assert_equal(bi.copy().argsort(kind=kind), b, msg)
 
@@ -2045,7 +2045,7 @@ class TestMethods:
         r = np.arange(101)
         rr = r[::-1]
         for kind in self.sort_kinds:
-            msg = "string argsort, kind=%s" % kind
+            msg = f"string argsort, kind={kind}"
             assert_equal(a.copy().argsort(kind=kind), r, msg)
             assert_equal(b.copy().argsort(kind=kind), rr, msg)
 
@@ -2056,7 +2056,7 @@ class TestMethods:
         r = np.arange(101)
         rr = r[::-1]
         for kind in self.sort_kinds:
-            msg = "unicode argsort, kind=%s" % kind
+            msg = f"unicode argsort, kind={kind}"
             assert_equal(a.copy().argsort(kind=kind), r, msg)
             assert_equal(b.copy().argsort(kind=kind), rr, msg)
 
@@ -2067,7 +2067,7 @@ class TestMethods:
         r = np.arange(101)
         rr = r[::-1]
         for kind in self.sort_kinds:
-            msg = "object argsort, kind=%s" % kind
+            msg = f"object argsort, kind={kind}"
             assert_equal(a.copy().argsort(kind=kind), r, msg)
             assert_equal(b.copy().argsort(kind=kind), rr, msg)
 
@@ -2078,7 +2078,7 @@ class TestMethods:
         r = np.arange(101)
         rr = r[::-1]
         for kind in self.sort_kinds:
-            msg = "structured array argsort, kind=%s" % kind
+            msg = f"structured array argsort, kind={kind}"
             assert_equal(a.copy().argsort(kind=kind), r, msg)
             assert_equal(b.copy().argsort(kind=kind), rr, msg)
 
@@ -2088,7 +2088,7 @@ class TestMethods:
         r = np.arange(101)
         rr = r[::-1]
         for kind in ['q', 'h', 'm']:
-            msg = "datetime64 argsort, kind=%s" % kind
+            msg = f"datetime64 argsort, kind={kind}"
             assert_equal(a.copy().argsort(kind=kind), r, msg)
             assert_equal(b.copy().argsort(kind=kind), rr, msg)
 
@@ -2098,7 +2098,7 @@ class TestMethods:
         r = np.arange(101)
         rr = r[::-1]
         for kind in ['q', 'h', 'm']:
-            msg = "timedelta64 argsort, kind=%s" % kind
+            msg = f"timedelta64 argsort, kind={kind}"
             assert_equal(a.copy().argsort(kind=kind), r, msg)
             assert_equal(b.copy().argsort(kind=kind), rr, msg)
 
@@ -2131,10 +2131,10 @@ class TestMethods:
         a = np.zeros(100, dtype=complex)
         assert_equal(a.argsort(kind='m'), r)
         # string
-        a = np.array(['aaaaaaaaa' for i in range(100)])
+        a = np.array(['aaaaaaaaa' for _ in range(100)])
         assert_equal(a.argsort(kind='m'), r)
         # unicode
-        a = np.array(['aaaaaaaaa' for i in range(100)], dtype=np.unicode_)
+        a = np.array(['aaaaaaaaa' for _ in range(100)], dtype=np.unicode_)
         assert_equal(a.argsort(kind='m'), r)
 
     def test_sort_unicode_kind(self):
@@ -3017,7 +3017,7 @@ class TestMethods:
         a = np.zeros((100, 100))
         if HAS_REFCOUNT:
             assert_(sys.getrefcount(a) < 50)
-        for i in range(100):
+        for _ in range(100):
             a.diagonal()
         if HAS_REFCOUNT:
             assert_(sys.getrefcount(a) < 50)

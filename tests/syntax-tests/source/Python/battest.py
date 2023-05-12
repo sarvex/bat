@@ -26,7 +26,7 @@ class Hello:
 # Decorators test
 class Decorators:
     @classmethod
-    def decoratorsTest(self):
+    def decoratorsTest(cls):
         pass
     
 H1 = Hello("john")
@@ -73,7 +73,7 @@ b = """good morning
 hello world
 bye"""
 
-formattest = "teststring is ={}".format(5)
+formattest = 'teststring is =5'
 
 # lambda test
 
@@ -90,11 +90,7 @@ elif 4 > 5:
 else:
     print("no")
 
-# loops
-i = 5
-while(i > 0):
+for i in range(5, 0, -1):
     print(i)
-    i -= 1
-
 for x in range(1, 20, 2):
     print(x)

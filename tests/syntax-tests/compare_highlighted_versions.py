@@ -18,7 +18,7 @@ def compare_highlighted_versions(root_old, root_new):
 
         path_new = path.join(root_new, dirname, filename)
 
-        print("\n========== {}/{}".format(dirname, filename))
+        print(f"\n========== {dirname}/{filename}")
 
         with open(path_old) as file_old:
             lines_old = file_old.readlines()
