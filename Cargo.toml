@@ -41,7 +41,7 @@ regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
 regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 
 [dependencies]
-is-terminal = { version = "0.4.4", optional = true }
+is-terminal = { version = "0.4.12", optional = true }
 nu-ansi-term = "0.47.0"
 ansi_colours = "^1.2"
 bincode = "1.0"
