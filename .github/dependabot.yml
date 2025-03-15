@@ -3,22 +3,12 @@ updates:
 - package-ecosystem: cargo
   directory: "/"
   schedule:
-    interval: monthly
-    time: "04:00"
-    timezone: Europe/Berlin
-  ignore:
-  - dependency-name: git2
-    versions:
-    - 0.13.17
+    interval: daily
 - package-ecosystem: gitsubmodule
   directory: "/"
   schedule:
-    interval: monthly
-    time: "04:00"
-    timezone: Europe/Berlin
+    interval: daily
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
-    interval: monthly
-    time: "04:00"
-    timezone: Europe/Berlin
+    interval: daily
